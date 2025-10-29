@@ -32,7 +32,7 @@ Prerequisites:
 brew install cmake ninja
 ```
 
-Main steps:
+Main steps (with option `DANDROID_ABI` properly set):
 
 ```bash
 export API=26
