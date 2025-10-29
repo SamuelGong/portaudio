@@ -1,65 +1,75 @@
-# PortAudio - portable audio I/O library
+# Zhifeng's Guidance
 
-PortAudio is a portable audio I/O library designed for cross-platform
-support of audio. It uses either a callback mechanism to request audio 
-processing, or blocking read/write calls to buffer data between the 
-native audio subsystem and the client. Audio can be processed in various 
-formats, including 32 bit floating point, and will be converted to the 
-native format internally.
+FYI: [This](./README-orig.md) is the original README for the original portaudio project
 
-## Documentation:
+## 1. Comment Steps
 
-* Documentation is available at http://www.portaudio.com/docs/
-* Or at `/doc/html/index.html` after running Doxygen.
-* Also see `src/common/portaudio.h` for the API spec.
-* And see the `examples/` and `test/` directories for many examples of usage. (We suggest `examples/paex_saw.c` for an example.)
+```bash
+git clone git@github.com:SamuelGong/portaudio.git
+cd portaudio
+```
 
-For information on compiling programs with PortAudio, please see the
-tutorial at:
+Also, [download](https://developer.android.com/codelabs/basic-android-kotlin-compose-install-android-studio#0) and install Android Studio (with NDK installed at SDK Manager).
+Make the path to your installed NDK, e.g., `~/Library/Android/sdk/ndk/29.0.14206865` an environment variable, i.e.,,
 
-  http://portaudio.com/docs/v19-doxydocs/tutorial_start.html
-  
-We have an active mailing list for user and developer discussions.
-Please feel free to join. See http://www.portaudio.com for details.
+```bash
+export ANDROID_NDK=/Users/samuel/Library/Android/sdk/ndk/29.0.14206865  # Use your own path
+```
 
-## Important Files and Folders:
+Moreover, you need to confirm the ABI version of the target platform for cross-compilation.
 
-    include/portaudio.h     = header file for PortAudio API. Specifies API.	
-    src/common/             = platform independent code, host independent 
-                              code for all implementations.
-    src/os                  = os specific (but host api neutral) code
-    src/hostapi             = implementations for different host apis
+```bash
+adb shell getprop ro.product.cpu.abilist
 
+# Example output: arm64-v8a
+```
 
-### Host API Implementations:
+## 2. Compiling for Oneplus Phones (Android @ ARM) on a Macbook (macOS @ Apple Silicon)
 
-    src/hostapi/alsa        = Advanced Linux Sound Architecture (ALSA)
-    src/hostapi/asihpi      = AudioScience HPI
-    src/hostapi/asio        = ASIO for Windows and Macintosh
-    src/hostapi/audioio     = /dev/audio (Solaris/NetBSD Audio)
-    src/hostapi/coreaudio   = Macintosh Core Audio for OS X
-    src/hostapi/dsound      = Windows Direct Sound
-    src/hostapi/jack        = JACK Audio Connection Kit
-    src/hostapi/oss         = Unix Open Sound System (OSS)
-    src/hostapi/pulseaudio  = Sound system for POSIX OSes
-    src/hostapi/sndio       = Small audio and MIDI framework (sndio)
-    src/hostapi/wasapi      = Windows Vista WASAPI
-    src/hostapi/wdmks       = Windows WDM Kernel Streaming
-    src/hostapi/wmme        = Windows MultiMedia Extensions (MME)
+Prerequisites:
 
+```bash
+brew install cmake ninja
+```
 
-### Test Programs:
+Main steps:
 
-    test/pa_fuzz.c         = guitar fuzz box
-    test/pa_devs.c         = print a list of available devices
-    test/pa_minlat.c       = determine minimum latency for your machine
-    test/paqa_devs.c       = self test that opens all devices
-    test/paqa_errs.c       = test error detection and reporting
-    test/patest_clip.c     = hear a sine wave clipped and unclipped
-    test/patest_dither.c   = hear effects of dithering (extremely subtle)
-    test/patest_pink.c     = fun with pink noise
-    test/patest_record.c   = record and playback some audio
-    test/patest_maxsines.c = how many sine waves can we play? Tests Pa_GetCPULoad().
-    test/patest_sine.c     = output a sine wave in a simple PA app
-    test/patest_sync.c     = test synchronization of audio and video
-    test/patest_wire.c     = pass input to output, wire simulator
+```bash
+export API=26
+rm -rf build-arm64-v8a
+
+cmake -S . -B build-arm64-v8a -G Ninja \                              
+-DCMAKE_TOOLCHAIN_FILE="$ANDROID_NDK/build/cmake/android.toolchain.cmake" \
+-DANDROID_ABI=arm64-v8a \
+-DANDROID_PLATFORM=android-$API \
+-DPA_BUILD_SHARED=ON \
+-DPA_BUILD_STATIC=OFF \
+-DBUILD_SHARED_LIBS=ON
+cmake --build build-arm64-v8a --config Release
+
+mkdir -p out/include out/lib
+rsync -a include/ out/include/
+cp build-arm64-v8a/libportaudio.so out/lib/
+```
+
+<details> <summary><b>Example file output (Tab here to expand)</b></summary>
+
+```
+out
+├── include
+│   ├── pa_asio.h
+│   ├── pa_jack.h
+│   ├── pa_linux_alsa.h
+│   ├── pa_linux_pulseaudio.h
+│   ├── pa_mac_core.h
+│   ├── pa_win_ds.h
+│   ├── pa_win_wasapi.h
+│   ├── pa_win_waveformat.h
+│   ├── pa_win_wdmks.h
+│   ├── pa_win_wmme.h
+│   └── portaudio.h
+└── lib
+    └── libportaudio.so
+```
+
+</details>
