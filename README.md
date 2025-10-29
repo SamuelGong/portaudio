@@ -38,13 +38,10 @@ Main steps (with option `DANDROID_ABI` properly set):
 export API=26
 rm -rf build-arm64-v8a
 
-cmake -S . -B build-arm64-v8a -G Ninja \                              
--DCMAKE_TOOLCHAIN_FILE="$ANDROID_NDK/build/cmake/android.toolchain.cmake" \
--DANDROID_ABI=arm64-v8a \
--DANDROID_PLATFORM=android-$API \
--DPA_BUILD_SHARED=ON \
--DPA_BUILD_STATIC=OFF \
--DBUILD_SHARED_LIBS=ON
+cmake -S . -B build-arm64-v8a -G Ninja \          
+ -DCMAKE_TOOLCHAIN_FILE="$ANDROID_NDK/build/cmake/android.toolchain.cmake" \
+ -DANDROID_ABI=arm64-v8a -DANDROID_PLATFORM=android-$API \
+ -DPA_BUILD_SHARED=ON -DPA_BUILD_STATIC=OFF -DBUILD_SHARED_LIBS=ON
 cmake --build build-arm64-v8a --config Release
 
 mkdir -p out/include out/lib
